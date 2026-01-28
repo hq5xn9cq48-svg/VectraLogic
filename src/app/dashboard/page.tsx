@@ -1,49 +1,71 @@
 "use client";
 
 import { useState, useCallback } from "react";
-import Header from "@/components/Header";
-import DropZone from "@/components/DropZone";
-import ResultsTable from "@/components/ResultsTable";
-import LoadingState from "@/components/LoadingState";
-import { exportToExcel } from "@/lib/excel";
+import Image from "next/image";
+import Link from "next/link";
+import { useDropzone } from "react-dropzone";
 import {
+  Upload,
   Download,
-  RefreshCw,
-  FileSpreadsheet,
-  Zap,
-  Shield,
-  Clock,
-  AlertTriangle,
-  ArrowRight,
+  ArrowLeft,
+  FileText,
+  Building2,
+  Calendar,
+  DollarSign,
+  Globe2,
+  CheckCircle,
+  AlertCircle,
+  Loader2,
+  X,
+  RotateCcw,
 } from "lucide-react";
-import { ParsedInvoiceData, UploadState } from "@/types";
+import { exportToExcel } from "@/lib/excel";
+
+interface ParsedData {
+  vendor: string | null;
+  date: string | null;
+  amount: string | null;
+  currency: string | null;
+}
+
+type Status = "idle" | "uploading" | "analyzing" | "success" | "error";
 
 export default function DashboardPage() {
-  const [uploadState, setUploadState] = useState<UploadState>("idle");
-  const [parsedData, setParsedData] = useState<ParsedInvoiceData | null>(null);
+  const [status, setStatus] = useState<Status>("idle");
+  const [data, setData] = useState<ParsedData | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const [loadingStage, setLoadingStage] = useState<
-    "uploading" | "analyzing" | "processing" | "complete"
-  >("uploading");
+  const [fileName, setFileName] = useState<string>("");
+  const [preview, setPreview] = useState<string | null>(null);
 
-  const handleFileSelect = useCallback(async (file: File) => {
+  const onDrop = useCallback(async (acceptedFiles: File[]) => {
+    const file = acceptedFiles[0];
+    if (!file) return;
+
+    setFileName(file.name);
     setError(null);
-    setParsedData(null);
-    setUploadState("uploading");
-    setLoadingStage("uploading");
+    setData(null);
+
+    // Preview for images
+    if (file.type.startsWith("image/")) {
+      const reader = new FileReader();
+      reader.onload = () => setPreview(reader.result as string);
+      reader.readAsDataURL(file);
+    } else {
+      setPreview(null);
+    }
+
+    setStatus("uploading");
 
     try {
       const formData = new FormData();
       formData.append("file", file);
 
-      setTimeout(() => setLoadingStage("analyzing"), 500);
+      setStatus("analyzing");
 
       const response = await fetch("/api/parse", {
         method: "POST",
         body: formData,
       });
-
-      setLoadingStage("processing");
 
       const result = await response.json();
 
@@ -51,252 +73,260 @@ export default function DashboardPage() {
         throw new Error(result.error || "Failed to parse invoice");
       }
 
-      setLoadingStage("complete");
-      await new Promise((resolve) => setTimeout(resolve, 500));
-
-      setParsedData(result.data);
-      setUploadState("success");
+      setData(result.data);
+      setStatus("success");
     } catch (err) {
-      console.error("Upload error:", err);
       setError(err instanceof Error ? err.message : "An error occurred");
-      setUploadState("error");
+      setStatus("error");
     }
   }, []);
 
-  const handleExport = useCallback(() => {
-    if (parsedData) {
-      exportToExcel(parsedData, "vectralogic_invoice");
-    }
-  }, [parsedData]);
+  const { getRootProps, getInputProps, isDragActive } = useDropzone({
+    onDrop,
+    accept: {
+      "image/png": [".png"],
+      "image/jpeg": [".jpg", ".jpeg"],
+      "application/pdf": [".pdf"],
+    },
+    maxSize: 10 * 1024 * 1024,
+    multiple: false,
+    disabled: status === "uploading" || status === "analyzing",
+  });
 
-  const handleReset = useCallback(() => {
-    setUploadState("idle");
-    setParsedData(null);
+  const handleExport = () => {
+    if (data) {
+      exportToExcel(data, "invoice_data");
+    }
+  };
+
+  const handleReset = () => {
+    setStatus("idle");
+    setData(null);
     setError(null);
-    setLoadingStage("uploading");
-  }, []);
+    setFileName("");
+    setPreview(null);
+  };
+
+  const formatAmount = (amount: string): string => {
+    const num = parseFloat(amount);
+    if (isNaN(num)) return amount;
+    return num.toLocaleString("en-US", {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2,
+    });
+  };
 
   return (
-    <div className="min-h-screen bg-[#0B1120]">
-      <Header />
+    <div className="min-h-screen bg-[#0a0f1a] bg-pattern">
+      {/* Header */}
+      <header className="border-b border-[#1e2a3a] bg-[#0a0f1a]/95 backdrop-blur-sm sticky top-0 z-50">
+        <div className="max-w-5xl mx-auto px-5 h-16 flex items-center justify-between">
+          <Link href="/" className="flex items-center gap-4">
+            <Image
+              src="https://i.postimg.cc/63KzWQny/IMG-8579.png"
+              alt="VectraLogic"
+              width={130}
+              height={32}
+              className="h-7 w-auto"
+              priority
+            />
+          </Link>
+          <Link
+            href="/"
+            className="text-[#8892a6] hover:text-white flex items-center gap-2 text-sm transition-colors"
+          >
+            <ArrowLeft size={16} />
+            <span className="hidden sm:inline">Back to Home</span>
+          </Link>
+        </div>
+      </header>
 
-      {/* Main Content */}
-      <main className="pt-20 pb-12">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          {/* Page Header */}
-          <div className="py-8">
-            <h1 className="font-heading text-2xl md:text-3xl font-bold text-white mb-2">
-              Invoice Parser
-            </h1>
-            <p className="text-slate-400">
-              Upload your freight invoice to extract structured data using AI
-            </p>
-          </div>
+      {/* Main */}
+      <main className="max-w-5xl mx-auto px-5 py-8">
+        {/* Title */}
+        <div className="mb-8">
+          <h1 className="text-2xl sm:text-3xl font-bold mb-2">Invoice Parser</h1>
+          <p className="text-[#8892a6]">Upload your invoice to extract data automatically</p>
+        </div>
 
-          {/* Main Grid */}
-          <div className="grid lg:grid-cols-2 gap-6 lg:gap-8">
-            {/* Left Column - Upload */}
-            <div className="space-y-6">
-              {/* Upload Card */}
-              <div className="glass-card rounded-xl p-5 md:p-6">
-                <div className="flex items-center justify-between mb-5">
-                  <h2 className="font-heading text-lg font-semibold text-white">
-                    Upload Invoice
-                  </h2>
-                  {uploadState !== "idle" && (
-                    <button
-                      onClick={handleReset}
-                      className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-slate-800 border border-slate-700 text-slate-300 hover:bg-slate-700 hover:text-white transition-all text-sm"
-                    >
-                      <RefreshCw size={14} />
-                      <span className="hidden sm:inline">New Upload</span>
-                    </button>
-                  )}
-                </div>
-
-                <DropZone
-                  onFileSelect={handleFileSelect}
-                  disabled={
-                    uploadState === "uploading" || uploadState === "analyzing"
-                  }
-                />
-              </div>
-
-              {/* Feature Cards */}
-              <div className="grid grid-cols-3 gap-3">
-                <FeatureCard
-                  icon={<Zap size={18} />}
-                  title="Fast"
-                  value="< 5s"
-                />
-                <FeatureCard
-                  icon={<Shield size={18} />}
-                  title="Secure"
-                  value="E2E"
-                />
-                <FeatureCard
-                  icon={<Clock size={18} />}
-                  title="Real-time"
-                  value="Instant"
-                />
-              </div>
-            </div>
-
-            {/* Right Column - Results */}
-            <div className="space-y-6">
-              {/* Results Card */}
-              <div className="glass-card rounded-xl p-5 md:p-6 min-h-[400px]">
-                <div className="flex items-center justify-between mb-5">
-                  <h2 className="font-heading text-lg font-semibold text-white">
-                    Extracted Data
-                  </h2>
-                  {parsedData && (
-                    <button
-                      onClick={handleExport}
-                      className="btn-primary flex items-center gap-2 px-4 py-2 rounded-lg text-sm"
-                    >
-                      <Download size={14} />
-                      Export Excel
-                    </button>
-                  )}
-                </div>
-
-                {/* State-based Content */}
-                {uploadState === "idle" && <EmptyState />}
-
-                {(uploadState === "uploading" ||
-                  uploadState === "analyzing") && (
-                  <LoadingState stage={loadingStage} />
-                )}
-
-                {uploadState === "success" && parsedData && (
-                  <ResultsTable data={parsedData} />
-                )}
-
-                {uploadState === "error" && (
-                  <ErrorState message={error} onRetry={handleReset} />
-                )}
-              </div>
-
-              {/* Export Card */}
-              {parsedData && (
-                <div className="glass-card rounded-xl p-4 animate-fade-in-up">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 rounded-lg bg-[#06B6D4]/10 border border-[#06B6D4]/20 flex items-center justify-center">
-                        <FileSpreadsheet size={18} className="text-[#06B6D4]" />
-                      </div>
-                      <div>
-                        <p className="text-sm font-medium text-white">
-                          Ready for Export
-                        </p>
-                        <p className="text-xs text-slate-500">
-                          Download as Excel (.xlsx)
-                        </p>
-                      </div>
-                    </div>
-                    <button
-                      onClick={handleExport}
-                      className="flex items-center gap-2 px-4 py-2 rounded-lg bg-[#06B6D4]/10 border border-[#06B6D4]/30 text-[#06B6D4] hover:bg-[#06B6D4]/20 transition-all text-sm font-medium"
-                    >
-                      Download
-                      <ArrowRight size={14} />
-                    </button>
-                  </div>
-                </div>
+        {/* Grid */}
+        <div className="grid lg:grid-cols-2 gap-6">
+          {/* Upload Card */}
+          <div className="card p-6">
+            <div className="flex items-center justify-between mb-5">
+              <h2 className="text-lg font-semibold">Upload Invoice</h2>
+              {status !== "idle" && (
+                <button
+                  onClick={handleReset}
+                  className="text-[#8892a6] hover:text-white text-sm flex items-center gap-1.5 transition-colors"
+                >
+                  <RotateCcw size={14} />
+                  Reset
+                </button>
               )}
             </div>
-          </div>
 
-          {/* Stats Section */}
-          <div className="mt-12 glass-card rounded-xl p-6">
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
-              <StatItem label="Invoices Processed" value="0" />
-              <StatItem label="Fields Extracted" value="0" />
-              <StatItem label="Accuracy Rate" value="99.2%" />
-              <StatItem label="Avg. Time" value="3.2s" />
+            <div
+              {...getRootProps()}
+              className={`upload-zone min-h-[260px] flex flex-col items-center justify-center p-6 text-center ${
+                isDragActive ? "active" : ""
+              } ${status === "uploading" || status === "analyzing" ? "opacity-60 pointer-events-none" : ""}`}
+            >
+              <input {...getInputProps()} />
+
+              {preview ? (
+                <div className="relative">
+                  <img
+                    src={preview}
+                    alt="Preview"
+                    className="max-h-36 rounded-lg mb-4 border border-[#1e2a3a]"
+                  />
+                  {status === "idle" && (
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleReset();
+                      }}
+                      className="absolute -top-2 -right-2 w-6 h-6 bg-[#1e2a3a] rounded-full flex items-center justify-center hover:bg-[#2a3a4a] transition-colors"
+                    >
+                      <X size={12} />
+                    </button>
+                  )}
+                </div>
+              ) : status === "analyzing" ? (
+                <div className="relative w-20 h-20 mb-4">
+                  <div className="absolute inset-0 border-2 border-[#00c6ab]/30 rounded-xl overflow-hidden">
+                    <div className="scan-line" />
+                  </div>
+                  <Loader2 size={28} className="absolute inset-0 m-auto text-[#00c6ab] spinner" />
+                </div>
+              ) : (
+                <div className="w-16 h-16 rounded-2xl bg-[#00c6ab]/10 flex items-center justify-center mb-4">
+                  <Upload size={26} className="text-[#00c6ab]" />
+                </div>
+              )}
+
+              <p className="font-medium mb-1.5">
+                {status === "analyzing"
+                  ? "Analyzing invoice..."
+                  : status === "uploading"
+                  ? "Uploading..."
+                  : isDragActive
+                  ? "Drop here"
+                  : "Drop your invoice here"}
+              </p>
+              <p className="text-sm text-[#5a6478]">
+                {fileName || "PNG, JPG, or PDF (max 10MB)"}
+              </p>
             </div>
           </div>
+
+          {/* Results Card */}
+          <div className="card p-6">
+            <div className="flex items-center justify-between mb-5">
+              <h2 className="text-lg font-semibold">Extracted Data</h2>
+              {data && (
+                <button
+                  onClick={handleExport}
+                  className="btn-primary text-sm py-2.5 px-4"
+                >
+                  <Download size={14} />
+                  Export
+                </button>
+              )}
+            </div>
+
+            {/* Idle State */}
+            {status === "idle" && (
+              <div className="h-[260px] flex flex-col items-center justify-center text-center">
+                <div className="w-16 h-16 rounded-2xl bg-[#1e2a3a] flex items-center justify-center mb-4">
+                  <FileText size={26} className="text-[#5a6478]" />
+                </div>
+                <p className="text-[#5a6478]">Upload an invoice to see results</p>
+              </div>
+            )}
+
+            {/* Loading State */}
+            {(status === "uploading" || status === "analyzing") && (
+              <div className="h-[260px] flex flex-col items-center justify-center">
+                <Loader2 size={36} className="text-[#00c6ab] spinner mb-4" />
+                <p className="text-[#8892a6]">
+                  {status === "uploading" ? "Uploading..." : "AI is analyzing..."}
+                </p>
+              </div>
+            )}
+
+            {/* Error State */}
+            {status === "error" && (
+              <div className="h-[260px] flex flex-col items-center justify-center text-center">
+                <div className="w-16 h-16 rounded-2xl bg-red-500/10 flex items-center justify-center mb-4">
+                  <AlertCircle size={26} className="text-red-400" />
+                </div>
+                <p className="text-red-400 font-medium mb-2">Analysis Failed</p>
+                <p className="text-sm text-[#5a6478] max-w-xs">{error}</p>
+                <button
+                  onClick={handleReset}
+                  className="btn-secondary text-sm py-2 px-4 mt-4"
+                >
+                  Try Again
+                </button>
+              </div>
+            )}
+
+            {/* Success State */}
+            {status === "success" && data && (
+              <div className="space-y-3">
+                <div className="flex items-center gap-2 text-green-400 mb-4">
+                  <CheckCircle size={16} />
+                  <span className="text-sm font-medium">Data extracted successfully</span>
+                </div>
+
+                {[
+                  { icon: Building2, label: "Vendor", value: data.vendor },
+                  { icon: Calendar, label: "Date", value: data.date },
+                  { icon: DollarSign, label: "Amount", value: data.amount ? formatAmount(data.amount) : null },
+                  { icon: Globe2, label: "Currency", value: data.currency },
+                ].map((item) => (
+                  <div key={item.label} className="data-item">
+                    <div className="flex items-center gap-3">
+                      <div className="w-9 h-9 rounded-lg bg-[#00c6ab]/10 flex items-center justify-center">
+                        <item.icon size={16} className="text-[#00c6ab]" />
+                      </div>
+                      <span className="text-[#8892a6] text-sm">{item.label}</span>
+                    </div>
+                    <span className="font-mono text-sm font-medium">
+                      {item.value || <span className="text-[#5a6478] italic">Not found</span>}
+                    </span>
+                  </div>
+                ))}
+
+                {/* Mobile Export */}
+                <button
+                  onClick={handleExport}
+                  className="w-full btn-primary mt-4 lg:hidden"
+                >
+                  <Download size={16} />
+                  Download Excel
+                </button>
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* Stats */}
+        <div className="grid grid-cols-3 gap-4 mt-8">
+          {[
+            { value: "5s", label: "Avg. Time" },
+            { value: "99%", label: "Accuracy" },
+            { value: "150+", label: "Currencies" },
+          ].map((stat) => (
+            <div key={stat.label} className="card p-4 text-center">
+              <p className="text-xl sm:text-2xl font-bold text-[#00c6ab]">{stat.value}</p>
+              <p className="text-xs text-[#5a6478] mt-1">{stat.label}</p>
+            </div>
+          ))}
         </div>
       </main>
-    </div>
-  );
-}
-
-// Sub-components
-function FeatureCard({
-  icon,
-  title,
-  value,
-}: {
-  icon: React.ReactNode;
-  title: string;
-  value: string;
-}) {
-  return (
-    <div className="glass-card rounded-xl p-4 text-center">
-      <div className="w-10 h-10 mx-auto rounded-lg bg-[#06B6D4]/10 border border-[#06B6D4]/20 flex items-center justify-center text-[#06B6D4] mb-2">
-        {icon}
-      </div>
-      <p className="text-xs text-slate-500 mb-1">{title}</p>
-      <p className="text-sm font-semibold text-white">{value}</p>
-    </div>
-  );
-}
-
-function EmptyState() {
-  return (
-    <div className="flex flex-col items-center justify-center h-[320px] text-center px-4">
-      <div className="w-16 h-16 rounded-2xl bg-slate-800 border border-slate-700 flex items-center justify-center mb-6">
-        <FileSpreadsheet size={28} className="text-slate-500" />
-      </div>
-      <h3 className="font-heading text-lg font-semibold text-white mb-2">
-        No Data Yet
-      </h3>
-      <p className="text-sm text-slate-500 max-w-[260px]">
-        Upload an invoice to extract vendor, date, amount, and currency
-        information
-      </p>
-    </div>
-  );
-}
-
-function ErrorState({
-  message,
-  onRetry,
-}: {
-  message: string | null;
-  onRetry: () => void;
-}) {
-  return (
-    <div className="flex flex-col items-center justify-center h-[320px] text-center px-4">
-      <div className="w-16 h-16 rounded-2xl bg-red-500/10 border border-red-500/30 flex items-center justify-center mb-6">
-        <AlertTriangle size={28} className="text-red-400" />
-      </div>
-      <h3 className="font-heading text-lg font-semibold text-white mb-2">
-        Processing Failed
-      </h3>
-      <p className="text-sm text-slate-500 max-w-[280px] mb-6">
-        {message || "An unexpected error occurred while processing your invoice"}
-      </p>
-      <button
-        onClick={onRetry}
-        className="flex items-center gap-2 px-5 py-2.5 rounded-lg bg-slate-800 border border-slate-700 text-white hover:bg-slate-700 transition-all text-sm font-medium"
-      >
-        <RefreshCw size={14} />
-        Try Again
-      </button>
-    </div>
-  );
-}
-
-function StatItem({ label, value }: { label: string; value: string }) {
-  return (
-    <div className="text-center">
-      <p className="font-heading text-2xl md:text-3xl font-bold text-[#06B6D4] mb-1">
-        {value}
-      </p>
-      <p className="text-xs text-slate-500">{label}</p>
     </div>
   );
 }

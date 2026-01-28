@@ -1,29 +1,20 @@
-@import url("https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&display=swap");
 @import "tailwindcss";
 
-/* ============================================
-   VECTRALOGIC DESIGN SYSTEM
-   Deep Midnight Blue #0B1120
-   Luminous Teal #06B6D4
-   ============================================ */
+/* ===========================================
+   VECTRALOGIC - CLEAN MINIMAL DESIGN
+   Brand: Turquoise gradient + Dark background
+   =========================================== */
 
 :root {
-  --color-midnight: #0b1120;
-  --color-midnight-light: #0f172a;
-  --color-teal: #06b6d4;
-  --color-teal-glow: rgba(6, 182, 212, 0.5);
-  --color-border: #1e293b;
-  --color-border-light: #334155;
-  --color-text-primary: #f8fafc;
-  --color-text-secondary: #94a3b8;
-  --color-text-muted: #64748b;
-  --color-glass: rgba(15, 23, 42, 0.8);
-  --color-glass-light: rgba(255, 255, 255, 0.03);
-}
-
-/* Force dark mode globally */
-html {
-  color-scheme: dark;
+  --bg-dark: #0a0f1a;
+  --bg-card: #0f1629;
+  --teal: #00c6ab;
+  --teal-light: #00d4bb;
+  --teal-glow: rgba(0, 198, 171, 0.15);
+  --text-primary: #ffffff;
+  --text-secondary: #8892a6;
+  --text-muted: #5a6478;
+  --border: #1e2a3a;
 }
 
 * {
@@ -32,385 +23,196 @@ html {
   box-sizing: border-box;
 }
 
-html,
-body {
-  min-height: 100vh;
+html {
   scroll-behavior: smooth;
 }
 
 body {
-  font-family: "Inter", system-ui, -apple-system, sans-serif;
-  background-color: var(--color-midnight);
-  color: var(--color-text-primary);
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  background: var(--bg-dark);
+  color: var(--text-primary);
   line-height: 1.6;
   -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
+  min-height: 100vh;
 }
 
-/* ============================================
-   INDUSTRIAL TECH GRID BACKGROUND
-   ============================================ */
-body::before {
-  content: "";
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background-image: 
-    /* Subtle dot grid */
-    radial-gradient(circle at 1px 1px, rgba(6, 182, 212, 0.05) 1px, transparent 0);
-  background-size: 32px 32px;
-  pointer-events: none;
-  z-index: 0;
+/* Simple Grid Pattern */
+.bg-pattern {
+  background-image: radial-gradient(circle at 1px 1px, rgba(0, 198, 171, 0.05) 1px, transparent 0);
+  background-size: 40px 40px;
 }
 
-/* Animated gradient orbs */
-body::after {
-  content: "";
-  position: fixed;
-  top: -50%;
-  left: -50%;
-  right: -50%;
-  bottom: -50%;
-  background: 
-    radial-gradient(circle at 20% 20%, rgba(6, 182, 212, 0.08) 0%, transparent 50%),
-    radial-gradient(circle at 80% 80%, rgba(6, 182, 212, 0.05) 0%, transparent 50%),
-    radial-gradient(circle at 40% 60%, rgba(6, 182, 212, 0.03) 0%, transparent 40%);
-  animation: float 20s ease-in-out infinite;
-  pointer-events: none;
-  z-index: 0;
+/* Card */
+.card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 16px;
 }
 
-@keyframes float {
-  0%, 100% { transform: translate(0, 0) rotate(0deg); }
-  33% { transform: translate(2%, 2%) rotate(1deg); }
-  66% { transform: translate(-1%, 1%) rotate(-1deg); }
+.card-glow {
+  box-shadow: 0 0 40px var(--teal-glow);
 }
 
-/* ============================================
-   TYPOGRAPHY
-   ============================================ */
-h1, h2, h3, h4, h5, h6 {
-  font-family: "Space Grotesk", system-ui, sans-serif;
-  font-weight: 600;
-  letter-spacing: -0.02em;
-}
-
-.font-heading {
-  font-family: "Space Grotesk", system-ui, sans-serif;
-}
-
-.font-mono {
-  font-family: "JetBrains Mono", "Fira Code", monospace;
-}
-
-/* ============================================
-   GLASSMORPHISM COMPONENTS
-   ============================================ */
-.glass {
-  background: var(--color-glass);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  border: 1px solid var(--color-border);
-}
-
-.glass-card {
-  background: linear-gradient(
-    135deg,
-    rgba(15, 23, 42, 0.9) 0%,
-    rgba(15, 23, 42, 0.7) 100%
-  );
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
-  border: 1px solid var(--color-border);
-  box-shadow: 
-    0 4px 6px -1px rgba(0, 0, 0, 0.3),
-    0 2px 4px -2px rgba(0, 0, 0, 0.2),
-    inset 0 1px 0 0 rgba(255, 255, 255, 0.05);
-}
-
-.glass-card:hover {
-  border-color: var(--color-border-light);
-  box-shadow: 
-    0 10px 15px -3px rgba(0, 0, 0, 0.4),
-    0 4px 6px -4px rgba(0, 0, 0, 0.3),
-    inset 0 1px 0 0 rgba(255, 255, 255, 0.08);
-}
-
-/* ============================================
-   BUTTONS
-   ============================================ */
+/* Primary Button */
 .btn-primary {
-  background: linear-gradient(135deg, #06b6d4 0%, #0891b2 100%);
-  color: #0b1120;
+  background: linear-gradient(135deg, var(--teal) 0%, var(--teal-light) 100%);
+  color: #000;
   font-weight: 600;
-  padding: 0.75rem 1.5rem;
-  border-radius: 0.5rem;
-  transition: all 0.2s ease;
-  box-shadow: 
-    0 0 20px rgba(6, 182, 212, 0.3),
-    0 4px 12px rgba(6, 182, 212, 0.2);
-  position: relative;
-  overflow: hidden;
-}
-
-.btn-primary::before {
-  content: "";
-  position: absolute;
-  top: 0;
-  left: -100%;
-  width: 100%;
-  height: 100%;
-  background: linear-gradient(
-    90deg,
-    transparent,
-    rgba(255, 255, 255, 0.2),
-    transparent
-  );
-  transition: left 0.5s ease;
+  padding: 14px 28px;
+  border-radius: 10px;
+  border: none;
+  cursor: pointer;
+  transition: all 0.25s ease;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  font-size: 15px;
 }
 
 .btn-primary:hover {
   transform: translateY(-2px);
-  box-shadow: 
-    0 0 30px rgba(6, 182, 212, 0.4),
-    0 8px 20px rgba(6, 182, 212, 0.3);
-}
-
-.btn-primary:hover::before {
-  left: 100%;
+  box-shadow: 0 8px 30px rgba(0, 198, 171, 0.35);
 }
 
 .btn-primary:active {
   transform: translateY(0);
 }
 
+/* Secondary Button */
 .btn-secondary {
-  background: rgba(255, 255, 255, 0.05);
-  color: var(--color-text-primary);
+  background: transparent;
+  color: var(--text-primary);
   font-weight: 500;
-  padding: 0.75rem 1.5rem;
-  border-radius: 0.5rem;
-  border: 1px solid var(--color-border);
+  padding: 14px 28px;
+  border-radius: 10px;
+  border: 1px solid var(--border);
+  cursor: pointer;
   transition: all 0.2s ease;
 }
 
 .btn-secondary:hover {
-  background: rgba(255, 255, 255, 0.08);
-  border-color: var(--color-border-light);
+  border-color: var(--teal);
+  background: var(--teal-glow);
 }
 
-/* ============================================
-   TEAL GLOW EFFECTS
-   ============================================ */
-.glow-teal {
-  box-shadow: 
-    0 0 20px rgba(6, 182, 212, 0.3),
-    0 0 40px rgba(6, 182, 212, 0.1);
-}
-
-.glow-teal-intense {
-  box-shadow: 
-    0 0 30px rgba(6, 182, 212, 0.5),
-    0 0 60px rgba(6, 182, 212, 0.2),
-    0 0 100px rgba(6, 182, 212, 0.1);
-}
-
-.text-glow {
-  text-shadow: 
-    0 0 20px rgba(6, 182, 212, 0.5),
-    0 0 40px rgba(6, 182, 212, 0.3);
-}
-
-.border-glow {
-  border-color: rgba(6, 182, 212, 0.3);
-  box-shadow: 
-    0 0 15px rgba(6, 182, 212, 0.15),
-    inset 0 0 15px rgba(6, 182, 212, 0.05);
-}
-
-/* ============================================
-   DROPZONE
-   ============================================ */
-.dropzone {
-  border: 2px dashed var(--color-border);
-  border-radius: 1rem;
+/* Upload Zone */
+.upload-zone {
+  border: 2px dashed var(--border);
+  border-radius: 16px;
   transition: all 0.3s ease;
-  position: relative;
-  overflow: hidden;
+  cursor: pointer;
+  background: rgba(0, 198, 171, 0.02);
 }
 
-.dropzone::before {
-  content: "";
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(
-    135deg,
-    rgba(6, 182, 212, 0) 0%,
-    rgba(6, 182, 212, 0.02) 100%
-  );
-  opacity: 0;
-  transition: opacity 0.3s ease;
+.upload-zone:hover,
+.upload-zone.active {
+  border-color: var(--teal);
+  background: var(--teal-glow);
 }
 
-.dropzone:hover,
-.dropzone-active {
-  border-color: var(--color-teal);
-  background: rgba(6, 182, 212, 0.05);
+/* Data Item */
+.data-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px 20px;
+  background: rgba(0, 198, 171, 0.03);
+  border-radius: 12px;
+  border: 1px solid rgba(30, 42, 58, 0.5);
 }
 
-.dropzone:hover::before,
-.dropzone-active::before {
-  opacity: 1;
+/* Badge */
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 14px;
+  border-radius: 50px;
+  background: var(--teal-glow);
+  border: 1px solid rgba(0, 198, 171, 0.2);
+  font-size: 13px;
+  color: var(--teal);
 }
 
-/* ============================================
-   DATA TABLE
-   ============================================ */
-.data-row {
-  background: rgba(255, 255, 255, 0.02);
-  border: 1px solid transparent;
-  transition: all 0.2s ease;
+/* Gradient Text */
+.text-gradient {
+  background: linear-gradient(135deg, var(--teal) 0%, var(--teal-light) 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
 }
 
-.data-row:hover {
-  background: rgba(6, 182, 212, 0.05);
-  border-color: rgba(6, 182, 212, 0.1);
+/* Loading Spinner */
+@keyframes spin {
+  to { transform: rotate(360deg); }
 }
 
-/* ============================================
-   ANIMATIONS
-   ============================================ */
+.spinner {
+  animation: spin 1s linear infinite;
+}
+
+/* Scan Animation */
 @keyframes scan {
-  0% { top: 0; opacity: 1; }
-  50% { opacity: 0.5; }
-  100% { top: 100%; opacity: 1; }
+  0%, 100% { top: 0%; opacity: 1; }
+  50% { top: 100%; opacity: 0.5; }
 }
 
 .scan-line {
   position: absolute;
   left: 0;
   right: 0;
-  height: 2px;
-  background: linear-gradient(
-    90deg,
-    transparent 0%,
-    var(--color-teal) 50%,
-    transparent 100%
-  );
-  box-shadow: 
-    0 0 10px var(--color-teal),
-    0 0 20px var(--color-teal);
+  height: 3px;
+  background: linear-gradient(90deg, transparent, var(--teal), transparent);
   animation: scan 2s ease-in-out infinite;
+  box-shadow: 0 0 10px var(--teal);
 }
 
-@keyframes pulse-glow {
-  0%, 100% { 
-    box-shadow: 0 0 20px rgba(6, 182, 212, 0.3);
-  }
-  50% { 
-    box-shadow: 0 0 40px rgba(6, 182, 212, 0.5);
-  }
+/* Pulse */
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.4; }
 }
 
-.animate-pulse-glow {
-  animation: pulse-glow 2s ease-in-out infinite;
+.animate-pulse {
+  animation: pulse 2s ease-in-out infinite;
 }
 
-@keyframes fadeInUp {
-  from {
-    opacity: 0;
-    transform: translateY(20px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-.animate-fade-in-up {
-  animation: fadeInUp 0.5s ease-out forwards;
-}
-
-/* Stagger children animations */
-.stagger-children > *:nth-child(1) { animation-delay: 0.1s; }
-.stagger-children > *:nth-child(2) { animation-delay: 0.2s; }
-.stagger-children > *:nth-child(3) { animation-delay: 0.3s; }
-.stagger-children > *:nth-child(4) { animation-delay: 0.4s; }
-
-/* ============================================
-   SKELETON LOADING
-   ============================================ */
-@keyframes shimmer {
-  0% { background-position: -200% 0; }
-  100% { background-position: 200% 0; }
-}
-
-.skeleton {
-  background: linear-gradient(
-    90deg,
-    rgba(6, 182, 212, 0.05) 25%,
-    rgba(6, 182, 212, 0.1) 50%,
-    rgba(6, 182, 212, 0.05) 75%
-  );
-  background-size: 200% 100%;
-  animation: shimmer 1.5s infinite;
-  border-radius: 0.25rem;
-}
-
-/* ============================================
-   SCROLLBAR
-   ============================================ */
+/* Scrollbar */
 ::-webkit-scrollbar {
   width: 8px;
   height: 8px;
 }
 
 ::-webkit-scrollbar-track {
-  background: var(--color-midnight);
+  background: var(--bg-dark);
 }
 
 ::-webkit-scrollbar-thumb {
-  background: var(--color-border);
+  background: var(--border);
   border-radius: 4px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: var(--color-border-light);
+  background: #2a3a4a;
 }
 
-/* ============================================
-   SELECTION
-   ============================================ */
-::selection {
-  background: rgba(6, 182, 212, 0.3);
-  color: white;
-}
-
-/* ============================================
-   FOCUS STATES
-   ============================================ */
+/* Focus States */
 *:focus-visible {
-  outline: 2px solid var(--color-teal);
+  outline: 2px solid var(--teal);
   outline-offset: 2px;
 }
 
-/* ============================================
-   RESPONSIVE UTILITIES
-   ============================================ */
+/* Smooth transitions for links */
+a {
+  transition: color 0.2s ease;
+}
+
+/* Mobile optimizations */
 @media (max-width: 640px) {
-  html {
+  .btn-primary,
+  .btn-secondary {
+    padding: 12px 20px;
     font-size: 14px;
   }
 }
-
-/* ============================================
-   Z-INDEX LAYERS
-   ============================================ */
-.z-background { z-index: 0; }
-.z-content { z-index: 10; }
-.z-overlay { z-index: 20; }
-.z-modal { z-index: 30; }
-.z-navbar { z-index: 40; }
-.z-tooltip { z-index: 50; }
