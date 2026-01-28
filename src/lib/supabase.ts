@@ -88,7 +88,8 @@ export async function saveInvoiceRecord(
 ): Promise<Invoice> {
   const { data, error } = await supabase
     .from("invoices")
-    .insert(invoice)
+    .insert(invoice as any)
+
     .select()
     .single();
 
